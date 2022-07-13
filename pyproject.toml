@@ -1,0 +1,20 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "micropython_ota"
+authors = [{name = "Oliver Gregorius", email = "oliver@gregorius.dev"}]
+readme = "README.md"
+license = {file = "LICENSE"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dynamic = ["version", "description"]
+keywords = ["OTA", "Microcontroller", "Micropython"]
+
+[project.urls]
+Source = "https://github.com/olivergregorius/micropython_ota"
