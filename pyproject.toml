@@ -15,6 +15,9 @@ classifiers = [
 ]
 dynamic = ["version", "description"]
 keywords = ["OTA", "Microcontroller", "Micropython"]
+dependencies = [
+    "urequests==0.1.2",
+]
 
 [project.urls]
 Source = "https://github.com/olivergregorius/micropython_ota"
