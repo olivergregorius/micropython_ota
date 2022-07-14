@@ -10,7 +10,7 @@ from mocks import micropython_ota_mock, urequests_mock
 
 class TestMicropythonOTA(unittest.TestCase):
     def tearDown(self) -> None:
-        for filename in ['main.py', 'version']:
+        for filename in ['version', 'main.py', 'library.py']:
             try:
                 os.remove(filename)
             except OSError:
@@ -71,11 +71,13 @@ class TestMicropythonOTA(unittest.TestCase):
         'urequests.urequests.get', urequests_mock.mock_get
     )
     def test_ota_update_on_version_changed(self):
-        micropython_ota.ota_update('http://example.org', 'sample', 'main.py')
+        micropython_ota.ota_update('http://example.org', 'sample', ['main.py', 'library.py'])
         with open('version', 'r') as current_version_file:
             self.assertEqual(current_version_file.readline(), 'v1.0.1')
         with open('main.py', 'r') as source_file:
             self.assertEqual(source_file.readline(), 'print("Hello World")')
+        with open('library.py', 'r') as source_file:
+            self.assertEqual(source_file.readline(), 'print("This is a library")')
 
     @patch(
         'micropython_ota.micropython_ota.check_version', micropython_ota_mock.mock_check_version_false
@@ -84,10 +86,11 @@ class TestMicropythonOTA(unittest.TestCase):
         'urequests.urequests.get', urequests_mock.mock_get
     )
     def test_ota_update_on_version_not_changed(self):
-        micropython_ota.ota_update('http://example.org', 'sample', 'main.py')
-        # For this test to pass the files 'version' and 'main.py' must not have been created because no update is needed
+        micropython_ota.ota_update('http://example.org', 'sample', ['main.py', 'library.py'])
+        # For this test to pass the files 'version', 'main.py' and 'library.py' must not have been created because no update is needed
         self.assertFalse('version' in os.listdir())
         self.assertFalse('main.py' in os.listdir())
+        self.assertFalse('library.py' in os.listdir())
 
     @patch(
         'micropython_ota.micropython_ota.check_version', micropython_ota_mock.mock_check_version_true
@@ -96,8 +99,8 @@ class TestMicropythonOTA(unittest.TestCase):
         'urequests.urequests.get', urequests_mock.mock_get_OSError
     )
     def test_ota_update_host_unavailable(self):
-        micropython_ota.ota_update('http://example.org', 'sample', 'main.py')
-        # For this test to pass the files 'version' and 'main.py' must not have been created because no update is needed
+        micropython_ota.ota_update('http://example.org', 'sample', ['main.py', 'library.py'])
+        # For this test to pass the files 'version', 'main.py' and 'library.py' must not have been created because no update is needed
         self.assertFalse('version' in os.listdir())
         self.assertFalse('main.py' in os.listdir())
 
@@ -108,10 +111,11 @@ class TestMicropythonOTA(unittest.TestCase):
         'urequests.urequests.get', urequests_mock.mock_get
     )
     def test_ota_update_source_file_not_found(self):
-        micropython_ota.ota_update('http://example.org', 'non_existing', 'main.py')
-        # For this test to pass the files 'version' and 'main.py' must not have been created because no update is needed
+        micropython_ota.ota_update('http://example.org', 'non_existing', ['main.py', 'library.py'])
+        # For this test to pass the files 'version', 'main.py' and 'library.py' must not have been created because no update is needed
         self.assertFalse('version' in os.listdir())
         self.assertFalse('main.py' in os.listdir())
+        self.assertFalse('library.py' in os.listdir())
 
     @patch(
         'micropython_ota.micropython_ota.check_version', micropython_ota_mock.mock_check_version_true
