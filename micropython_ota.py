@@ -1,11 +1,11 @@
 import machine
-from urequests import urequests
-import os
+import urequests
+import uos
 
 
 def check_version(host, project):
     try:
-        if 'version' in os.listdir():
+        if 'version' in uos.listdir():
             with open('version', 'r') as current_version_file:
                 current_version = current_version_file.readline().strip()
         else:

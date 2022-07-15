@@ -28,23 +28,11 @@ jobs:
           grep "$VERSION_STR" "$INIT_FILE"
           sed -i "s/$VERSION_STR/__version__ = \"$VERSION\"/" "$INIT_FILE"
 
-      - name: Install requirements
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Install flit
-        run: |
-          pip install flit
-
       - name: Build package
         run: |
-          flit build
+          python -m setup sdist
 
       - name: Publish package
-        env:
-          FLIT_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          FLIT_PASSWORD: ${{ secrets.PYPI_APIKEY }}
         run: |
-          flit publish
+          twine upload dist/*.tar.gz
 
