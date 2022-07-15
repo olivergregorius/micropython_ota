@@ -4,7 +4,7 @@ import unittest
 from unittest.mock import Mock, patch
 
 sys.modules['machine'] = Mock()
-sys.modules['urequests'] = __import__('requests')
+sys.modules['urequests'] = Mock()
 sys.modules['uos'] = __import__('os')
 import micropython_ota
 from mocks import micropython_ota_mock, urequests_mock
