@@ -1,12 +1,22 @@
+import os
+import re
 import sys
 sys.path.pop(0)
 from setuptools import setup
 sys.path.append("./sdist_upip")
 import sdist_upip
 
+version_reference = os.getenv('GITHUB_REF', default='0.1.0')
+release_version_search = re.search(r'(\d+.\d+.\d+)', version_reference)
+if release_version_search:
+    release_version = release_version_search.group()
+    print(f'Version: {release_version}')
+else:
+    raise ValueError("Version was not found")
+
 setup(
     name='micropython_ota',
-    version='0.1.6',
+    version=release_version,
     description='Micropython library for upgrading code over-the-air (OTA)',
     long_description=open("README.md").read(),
     long_description_content_type='text/markdown',

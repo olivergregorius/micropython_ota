@@ -17,17 +17,6 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Set release version
-        run: |
-          VERSION=`echo $GITHUB_REF | sed 's#.*/v##'`
-          echo "Setting release version to ${VERSION}"
-
-          VERSION_STR='__version__ = "develop"'
-          INIT_FILE='micropython_ota/__init__.py'
-
-          grep "$VERSION_STR" "$INIT_FILE"
-          sed -i "s/$VERSION_STR/__version__ = \"$VERSION\"/" "$INIT_FILE"
-
       - name: Build package
         run: |
           python -m setup sdist
