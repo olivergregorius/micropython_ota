@@ -31,9 +31,9 @@ server-root/
 For each project a directory must exist in the server's document root. Inside this directory a file "version" exists containing the version-tag to be pulled
 by the devices, e.g. `v1.0.0`. The source code files to be pulled by the devices are placed right next to the version-file, prefixed by the version-tag.
 This structure also provides the ability to do a rollback by simply changing the version-tag in the version-file to an older version-tag, as long as the
-relevant source code files still reside in the directory as well.
+relevant source code files still reside in the directory.
 
-In the following example two projects "sample" and "big_project" are defined:
+In the following example two projects "sample" and "big_project" are configured:
 
 ```
 server-root/
@@ -57,7 +57,8 @@ This library provides two methods for
 1. handling code updates during boot (`ota_update`) and
 2. checking for code updates at regular intervals (`check_for_ota_update`).
 
-The library can be installed using upip, ensure that the device is connected to the network:
+The library can be installed using [upip](https://docs.micropython.org/en/latest/reference/glossary.html#term-upip), ensure that the device is connected to the
+network:
 
 ```python
 import upip
@@ -78,10 +79,11 @@ filenames = ['boot.py', 'main.py']
 micropython_ota.ota_update(ota_host, project_name, filenames)
 ```
 
-That's it. On boot the library checks for code updates for the `project_name` on the given `ota_host` (see [Preparation](#preparation)) and updates the files
-listed in `filenames` accordingly.
+That's it. On boot the library retrieves the version-file from `http://192.168.2.100/sample/version` and evaluates its content against a locally persisted
+version-file. (Of course, on the first run the local version-file does not exist, yet. This is treated as a new version being available.)
+If the versions differ, the source code files listed in `filenames` are updated accordingly and on success the local version-file is updated as well.
 
-For regular checking for code updates the method `check_for_ota_update` might be called in curse of the regular application logic in main.py, e.g.:
+For regular checking for code updates the method `check_for_ota_update` might be called in the course of the regular application logic in main.py, e.g.:
 
 ```python
 import micropython_ota
@@ -96,5 +98,5 @@ while True:
     micropython_ota.check_for_ota_update(ota_host, project_name)
 ```
 
-In this case on each iteration the library checks for code updates for the `project_name` on the given `ota_host` (see [Preparation](#preparation)) and reboots
-the device if a code update is available. After reboot the `ota_update`-method called in the boot.py performs the actual update.
+In this case on each iteration the library checks for a new version as described above and reboots the device if a new version is available. After the reboot
+the `ota_update`-method called in the boot.py performs the actual update.
