@@ -17,11 +17,18 @@ jobs:
         with:
           python-version: "3.10"
 
+      - name: Install twine
+        run: |
+          pip install twine
+
       - name: Build package
         run: |
           python -m setup sdist
 
       - name: Publish package
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_APIKEY }}
         run: |
           twine upload dist/*.tar.gz
 

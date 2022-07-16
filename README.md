@@ -1,7 +1,7 @@
 # micropython-ota
 
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/olivergregorius/micropython_ota/Python%20Build?label=Python%20Build&logo=github)](https://github.com/olivergregorius/micropython_ota/actions/workflows/build.yml)
-[![Python Versions](https://img.shields.io/pypi/pyversions/micropython_ota?label=Python)](https://pypi.org/project/micropython_ota/)
+[![Python Versions](https://img.shields.io/pypi/pyversions/micropython-ota?label=Python)](https://pypi.org/project/micropython-ota/)
 [![GitHub](https://img.shields.io/github/license/olivergregorius/micropython_ota?label=License)](https://github.com/olivergregorius/micropython_ota/blob/HEAD/LICENSE)
 [![PyPI](https://img.shields.io/pypi/v/micropython-ota?label=PyPI)](https://pypi.org/project/micropython-ota/)
 
