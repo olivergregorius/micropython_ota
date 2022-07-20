@@ -15,13 +15,14 @@ def check_version(host, project):
             print(f'Remote version file {host}/{project}/version not found')
             return False, current_version
         remote_version = remote_version_response.text.strip()
+        remote_version_response.close()
         return current_version != remote_version, remote_version
     except Exception as ex:
         print(f'Something went wrong: {ex}')
         return False, current_version
 
 
-def ota_update(host, project, filenames):
+def ota_update(host, project, filenames, reset_device=True):
     all_files_found = True
     try:
         version_changed, remote_version = check_version(host, project)
@@ -33,11 +34,14 @@ def ota_update(host, project, filenames):
                     all_files_found = False
                     continue
                 source_file_content = source_file_response.text
+                source_file_response.close()
                 with open(filename, 'w') as source_file:
                     source_file.write(source_file_content)
             if all_files_found:
                 with open('version', 'w') as current_version_file:
                     current_version_file.write(remote_version)
+                if reset_device:
+                    machine.reset()
     except Exception as ex:
         print(f'Something went wrong: {ex}')
 

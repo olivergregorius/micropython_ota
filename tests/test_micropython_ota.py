@@ -72,14 +72,27 @@ class TestMicropythonOTA(unittest.TestCase):
     @patch(
         'urequests.get', urequests_mock.mock_get
     )
-    def test_ota_update_on_version_changed(self):
-        micropython_ota.ota_update('http://example.org', 'sample', ['main.py', 'library.py'])
+    def test_ota_update_on_version_changed_with_device_reset(self):
+        with patch('machine.reset') as machine_reset_call:
+            micropython_ota.ota_update('http://example.org', 'sample', ['main.py', 'library.py'])
         with open('version', 'r') as current_version_file:
             self.assertEqual(current_version_file.readline(), 'v1.0.1')
         with open('main.py', 'r') as source_file:
             self.assertEqual(source_file.readline(), 'print("Hello World")')
         with open('library.py', 'r') as source_file:
             self.assertEqual(source_file.readline(), 'print("This is a library")')
+        machine_reset_call.assert_called_once()
+
+    @patch(
+        'micropython_ota.check_version', micropython_ota_mock.mock_check_version_true
+    )
+    @patch(
+        'urequests.get', urequests_mock.mock_get
+    )
+    def test_ota_update_on_version_changed_without_device_reset(self):
+        with patch('machine.reset') as machine_reset_call:
+            micropython_ota.ota_update('http://example.org', 'sample', ['main.py', 'library.py'], False)
+        machine_reset_call.assert_not_called()
 
     @patch(
         'micropython_ota.check_version', micropython_ota_mock.mock_check_version_false

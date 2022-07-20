@@ -4,6 +4,9 @@ class MockedResponse:
         self.status_code = MockedUrls[url][0]
         self.text = MockedUrls[url][1]
 
+    def close(self):
+        pass
+
 
 MockedUrls = {
     'http://example.org/sample/version': (200, 'v1.0.1'),
