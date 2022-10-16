@@ -61,8 +61,8 @@ def ota_update(host, project, filenames, auth='', reset_device=True):
         print(f'Something went wrong: {ex}')
 
 
-def check_for_ota_update(host, project):
-    version_changed, remote_version = check_version(host, project)
+def check_for_ota_update(host, project, auth=''):
+    version_changed, remote_version = check_version(host, project, auth)
     if version_changed:
         print(f'Found new version {remote_version}, rebooting device...')
         machine.reset()
