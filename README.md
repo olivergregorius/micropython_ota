@@ -11,7 +11,7 @@ Micropython library for upgrading code over-the-air (OTA)
 
 ## Preparation
 
-For OTA updates to work an HTTP server like Apache or nGinx is required to be running and accessible by the device. This server can serve multiple devices and
+For OTA updates to work an HTTP/HTTPS server like Apache or nGinx is required to be running and accessible by the device. This server can serve multiple devices and
 multiple projects at once. The following directory structure must be provided for the OTA updates to work:
 
 ```
@@ -101,3 +101,28 @@ while True:
 
 In this case on each iteration the library checks for a new version as described above and resets the device if a new version is available. After the reset
 the `ota_update`-method called in the boot.py performs the actual update.
+
+## HTTP(S) Basic Authentication
+
+`ota_update()` and `check_for_ota_update()` methods allow an optional `auth` parameter.  When specified, `auth` is the base64 encoded `username:password` string (e.g. if username is `foo` and password is `bar`, the base64 encoding of `foo:bar` is `Zm9vOmJhcgo=`).  Use of HTTPS (versus HTTP) is very highly recommended when using `auth` as, otherwise, the resulting username/password are sent in the clear i.e. completely unsecure.
+
+Here is the same example as above, but using HTTPS and Basic Authentication:
+
+```python
+import micropython_ota
+
+# connect to network
+
+ota_host = 'https://example.com'
+project_name = 'sample'
+filenames = ['boot.py', 'main.py']
+userpass_b64 = 'Zm9vOmJhcgo='   # it's best to place this credential is a secrets.py file
+
+micropython_ota.ota_update(ota_host, project_name, filenames, auth=userpass_b64, reset_device=True)
+```
+
+There are plenty of tutorials online on how to set up secured HTTP file access on your webserver, but the basic steps are:
+- get and install an SSL certificate (Let's Encrypt is by far the best choice)
+- enable HTTPS access on your web server
+- prevent directories from listing files
+- enable HTTP Basic Authentication password protection on target directories
