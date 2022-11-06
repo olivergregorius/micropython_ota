@@ -89,9 +89,24 @@ class TestMicropythonOTA(unittest.TestCase):
     @patch(
         'urequests.get', urequests_mock.mock_get
     )
+    def test_ota_update_on_version_changed_with_version_subdirectory_structure(self):
+        micropython_ota.ota_update('http://example.org', 'sample', ['main.py', 'library.py'], use_version_prefix=False)
+        with open('version', 'r') as current_version_file:
+            self.assertEqual(current_version_file.readline(), 'v1.0.1')
+        with open('main.py', 'r') as source_file:
+            self.assertEqual(source_file.readline(), 'print("Hello Universe")')
+        with open('library.py', 'r') as source_file:
+            self.assertEqual(source_file.readline(), 'print("This is a very nice library")')
+
+    @patch(
+        'micropython_ota.check_version', micropython_ota_mock.mock_check_version_true
+    )
+    @patch(
+        'urequests.get', urequests_mock.mock_get
+    )
     def test_ota_update_on_version_changed_without_device_reset(self):
         with patch('machine.reset') as machine_reset_call:
-            micropython_ota.ota_update('http://example.org', 'sample', ['main.py', 'library.py'], False)
+            micropython_ota.ota_update('http://example.org', 'sample', ['main.py', 'library.py'], reset_device=False)
         machine_reset_call.assert_not_called()
 
     @patch(
