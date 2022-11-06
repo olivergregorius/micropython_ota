@@ -12,28 +12,47 @@ Micropython library for upgrading code over-the-air (OTA)
 ## Preparation
 
 For OTA updates to work an HTTP server like Apache or nGinx is required to be running and accessible by the device. This server can serve multiple devices and
-multiple projects at once. The following directory structure must be provided for the OTA updates to work:
+multiple projects at once. There are two supported directory structures of which one must be provided for the OTA updates to work:
 
-```
-server-root/
-|- <project_name>/
-|  |- version
-|  |- <version>_<filename1>
-|  |- <version>_<filename2>
-|  |- ...
-|- <project_name>/
-   |- version
-   |- <version>_<filename1>
-   |- <version>_<filename2>
-   |- ...
-```
+1. Version as prefix (default)
+    ```
+    server-root/
+    |- <project_name>/
+    |  |- version
+    |  |- <version>_<filename1>
+    |  |- <version>_<filename2>
+    |  |- ...
+    |- <project_name>/
+       |- version
+       |- <version>_<filename1>
+       |- <version>_<filename2>
+       |- ...
+    ```
+
+2. Version as subdirectory (by setting the parameter `use_version_prefix` to `False`, see [Usage](#usage))
+    ```
+    server-root/
+    |- <project_name>/
+    |  |- version
+    |  |- <version_subdir>
+    |     |- <filename1>
+    |     |- <filename2>
+    |     |- ...
+    |- <project_name>/
+       |- version
+       |- <version_subdir>
+          |- <filename1>
+          |- <filename2>
+          |- ...
+    ```
 
 For each project a directory must exist in the server's document root. Inside this directory a file "version" exists containing the version-tag to be pulled
-by the devices, e.g. `v1.0.0`. The source code files to be pulled by the devices are placed right next to the version-file, prefixed by the version-tag.
+by the devices, e.g. `v1.0.0`. The source code files to be pulled by the devices are placed either right next to the version-file, prefixed by the version-tag,
+or in a subdirectory named with the version-tag.
 This structure also provides the ability to do a rollback by simply changing the version-tag in the version-file to an older version-tag, as long as the
-relevant source code files still reside in the directory.
+relevant source code files still reside in the expected location.
 
-In the following example two projects "sample" and "big_project" are configured:
+In the following example two projects "sample" and "big_project" are configured, using the default, version-prefixed directory structure:
 
 ```
 server-root/
@@ -99,14 +118,15 @@ ota_host = 'http://192.168.2.100'
 project_name = 'sample'
 filenames = ['boot.py', 'main.py']
 
-micropython_ota.ota_update(ota_host, project_name, filenames, reset_device=True, timeout=5)
+micropython_ota.ota_update(ota_host, project_name, filenames, use_version_prefix=True, reset_device=True, timeout=5)
 ```
 
 That's it. On boot the library retrieves the version-file from `http://192.168.2.100/sample/version` and evaluates its content against a locally persisted
 version-file. (Of course, on the first run the local version-file does not exist, yet. This is treated as a new version being available.)
 If the versions differ, the source code files listed in `filenames` are updated accordingly and on success the local version-file is updated as well. If the
-`reset_device`-flag is set to `True` the device will be reset after the successful update. The flag defaults to `True`. The timeout can be set accordingly, by
-default its value is 5 seconds.
+`use_version_prefix` is set to True (default) the library expects the 'Version as prefix' directory structure on the server, otherwise it expects the 'Version
+as subdirectory' directory structure (see [Preparation](#preparation)). If the `reset_device`-flag is set to `True` (default) the device will be reset after the
+successful update. The timeout can be set accordingly, by default its value is 5 seconds.
 
 For regular checking for code updates the method `check_for_ota_update` might be called in the course of the regular application logic in main.py, e.g.:
 
