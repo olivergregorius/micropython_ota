@@ -50,20 +50,31 @@ server-root/
    |- v1.0.0_data.py
 ```
 
+## Installation
+
+The library can be installed using [upip](https://docs.micropython.org/en/latest/reference/glossary.html#term-upip) or
+[mip](https://docs.micropython.org/en/latest/reference/packages.html). Ensure that the device is connected to the network.
+
+### Installation using upip (Micropython < 1.19)
+
+```python
+import upip
+upip.install('micropython-ota')
+```
+
+### Installation using mip (Micropython >= 1.19)
+
+```python
+import mip
+mip.install('github:olivergregorius/micropython_ota/micropython_ota.py')
+```
+
 ## Usage
 
 This library provides two methods for
 
 1. handling code updates during boot (`ota_update`) and
 2. checking for code updates at regular intervals (`check_for_ota_update`).
-
-The library can be installed using [upip](https://docs.micropython.org/en/latest/reference/glossary.html#term-upip), ensure that the device is connected to the
-network:
-
-```python
-import upip
-upip.install('micropython-ota')
-```
 
 The `ota_update` method might be called in the boot.py file, right after the network connection has been established:
 
