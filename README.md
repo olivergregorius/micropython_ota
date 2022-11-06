@@ -64,9 +64,21 @@ upip.install('micropython-ota')
 
 ### Installation using mip (Micropython >= 1.19)
 
+#### Py-file
+
 ```python
 import mip
 mip.install('github:olivergregorius/micropython_ota/micropython_ota.py')
+```
+
+#### Cross-compiled mpy-file
+
+**NOTE**: Set the release_version variable accordingly.
+
+```python
+import mip
+release_version='vX.Y.Z'
+mip.install(f'https://github.com/olivergregorius/micropython_ota/releases/download/{release_version}/micropython_ota.mpy')
 ```
 
 ## Usage
