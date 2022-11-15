@@ -104,7 +104,7 @@ the `ota_update`-method called in the boot.py performs the actual update.
 
 ## HTTP(S) Basic Authentication
 
-`ota_update()` and `check_for_ota_update()` methods allow an optional `auth` parameter.  When specified, `auth` is the base64 encoded `username:password` string (e.g. if username is `foo` and password is `bar`, the base64 encoding of `foo:bar` is `Zm9vOmJhcgo=`).  Use of HTTPS (versus HTTP) is very highly recommended when using `auth` as, otherwise, the resulting username/password are sent in the clear i.e. completely unsecure.
+`ota_update()` and `check_for_ota_update()` methods allow an optional `auth` parameter.  When specified, `auth` is the base64 encoded `username:password` string (e.g. if username is `foo` and password is `bar`, the base64 encoding of `foo:bar` is `Zm9vOmJhcgo=`).  Use of HTTPS (versus HTTP) is very highly recommended when using `auth` as, otherwise, the resulting username/password are sent as plain text i.e. completely unsecure.
 
 Here is the same example as above, but using HTTPS and Basic Authentication:
 

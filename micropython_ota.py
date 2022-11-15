@@ -10,9 +10,9 @@ def check_version(host, project, auth=''):
         else:
             current_version = ''
 
-        if auth :
-            remote_version_response = urequests.get(f'{host}/{project}/version',headers={"Authorization":"Basic "+auth})
-        else :
+        if auth:
+            remote_version_response = urequests.get(f'{host}/{project}/version', headers={'Authorization': f'Basic {auth}'})
+        else:
             remote_version_response = urequests.get(f'{host}/{project}/version')
 
         if remote_version_response.status_code != 200:
@@ -36,9 +36,9 @@ def ota_update(host, project, filenames, auth='', reset_device=True):
         if version_changed:
             for filename in filenames:
                 
-                if auth :
-                    source_file_response = urequests.get(f'{host}/{project}/{remote_version}_{filename}',headers={"Authorization":"Basic "+auth})
-                else :
+                if auth:
+                    source_file_response = urequests.get(f'{host}/{project}/{remote_version}_{filename}', headers={'Authorization': f'Basic {auth}'})
+                else:
                     source_file_response = urequests.get(f'{host}/{project}/{remote_version}_{filename}')
                 
                 if source_file_response.status_code != 200:
