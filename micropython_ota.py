@@ -1,7 +1,7 @@
 import machine
-import urequests
-import uos
 import ubinascii
+import uos
+import urequests
 
 
 def check_version(host, project, auth=None, timeout=5) -> (bool, str):
