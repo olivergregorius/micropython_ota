@@ -1,8 +1,9 @@
 import machine
+import ubinascii
 import urequests
 import uos
 
-def check_version(host, project, auth=''):
+def check_version(host, project, auth=None):
     try:
         if 'version' in uos.listdir():
             with open('version', 'r') as current_version_file:
@@ -27,9 +28,18 @@ def check_version(host, project, auth=''):
         print(f'Something went wrong: {ex}')
         return False, current_version
 
+def generate_auth(user=None, pass=None):
+    if not user and not pass:
+        return None
+    if (user and not pass) or (pass and not user):
+        raise ValueError('Either only user or pass given. None or both are required.')
+    auth_bytes = ubinascii.b2a_base64(f'{user}:{pass}'.encode())
+    return auth_bytes.decode().strip()
 
-def ota_update(host, project, filenames, auth='', reset_device=True):
+
+def ota_update(host, project, filenames, user=None, pass=None, reset_device=True):
     all_files_found = True
+    auth = generate_auth(user, pass)
     
     try:
         version_changed, remote_version = check_version(host, project, auth)
@@ -61,7 +71,9 @@ def ota_update(host, project, filenames, auth='', reset_device=True):
         print(f'Something went wrong: {ex}')
 
 
-def check_for_ota_update(host, project, auth=''):
+def check_for_ota_update(host, project, user=None, pass=None):
+    auth = generate_auth(user, pass)
+    
     version_changed, remote_version = check_version(host, project, auth)
     if version_changed:
         print(f'Found new version {remote_version}, rebooting device...')
