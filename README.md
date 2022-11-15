@@ -148,9 +148,9 @@ the `ota_update`-method called in the boot.py performs the actual update. This m
 
 ## HTTP(S) Basic Authentication
 
-`ota_update()` and `check_for_ota_update()` methods allow optional `username` and `passwd` parameters.  When specified the library performs a basic
-authentication against the server hosting the source files.  Use of HTTPS (versus HTTP) is very highly recommended when using basic authentication as,
-otherwise, the resulting username and password are sent as plain text i.e. completely unsecure.
+`ota_update()` and `check_for_ota_update()` methods allow optional `user` and `passwd` parameters.  When specified the library performs a basic authentication
+against the server hosting the source files.  Use of HTTPS (versus HTTP) is very highly recommended when using basic authentication as, otherwise, the resulting
+username and password are sent as plain text i.e. completely unsecure.
 
 Here is the same example as above, but using HTTPS and Basic Authentication:
 
@@ -162,7 +162,7 @@ project_name = 'sample'
 filenames = ['boot.py', 'main.py']
 user = 'otauser'
 passwd = 'topsecret' # it's best to place this credential is a secrets.py file
-micropython_ota.ota_update(ota_host, project_name, filenames, username=username, passwd=passwd, reset_device=True)
+micropython_ota.ota_update(ota_host, project_name, filenames, user=user, passwd=passwd, reset_device=True)
 ```
 
 There are plenty of tutorials online on how to set up secured HTTP file access on your webserver, but the basic steps are:
