@@ -11,8 +11,8 @@ Micropython library for upgrading code over-the-air (OTA)
 
 ## Preparation
 
-For OTA updates to work an HTTP server like Apache or nGinx is required to be running and accessible by the device. This server can serve multiple devices and
-multiple projects at once. There are two supported directory structures of which one must be provided for the OTA updates to work:
+For OTA updates to work an HTTP/HTTPS server like Apache or nGinx is required to be running and accessible by the device. This server can serve multiple devices
+and multiple projects at once. There are two supported directory structures of which one must be provided for the OTA updates to work:
 
 1. Version as prefix (default)
     ```
@@ -145,3 +145,28 @@ while True:
 
 In this case on each iteration the library checks for a new version as described above and resets the device if a new version is available. After the reset
 the `ota_update`-method called in the boot.py performs the actual update. This method accepts the timeout setting, too, by default it is set to 5 seconds.
+
+## HTTP(S) Basic Authentication
+
+`ota_update()` and `check_for_ota_update()` methods allow optional `user` and `passwd` parameters.  When specified the library performs a basic authentication
+against the server hosting the source files.  Use of HTTPS (versus HTTP) is very highly recommended when using basic authentication as, otherwise, the resulting
+username and password are sent as plain text i.e. completely unsecure.
+
+Here is the same example as above, but using HTTPS and Basic Authentication:
+
+```python
+import micropython_ota
+# connect to network
+ota_host = 'https://example.com'
+project_name = 'sample'
+filenames = ['boot.py', 'main.py']
+user = 'otauser'
+passwd = 'topsecret' # it's best to place this credential is a secrets.py file
+micropython_ota.ota_update(ota_host, project_name, filenames, user=user, passwd=passwd, reset_device=True)
+```
+
+There are plenty of tutorials online on how to set up secured HTTP file access on your webserver, but the basic steps are:
+- get and install an SSL certificate (Let's Encrypt is by far the best choice)
+- enable HTTPS access on your web server
+- prevent directories from listing files
+- enable HTTP Basic Authentication password protection on target directories

@@ -6,6 +6,7 @@ from unittest.mock import Mock, patch
 sys.modules['machine'] = Mock()
 sys.modules['urequests'] = Mock()
 sys.modules['uos'] = __import__('os')
+sys.modules['ubinascii'] = __import__('binascii')
 import micropython_ota
 from mocks import micropython_ota_mock, urequests_mock
 
@@ -26,15 +27,20 @@ class TestMicropythonOTA(unittest.TestCase):
         self.assertTrue(version_changed)
         self.assertEqual(remote_version, 'v1.0.1')
 
-    @patch(
-        'urequests.get', urequests_mock.mock_get
-    )
-    def test_check_version_with_local_version_matching_remote_version(self):
+    def test_check_version_with_local_version_matching_remote_version_no_auth(self):
         with open('version', 'w') as current_version_file:
             current_version_file.write('v1.0.1')
-        version_changed, remote_version = micropython_ota.check_version('http://example.org', 'sample')
+        with patch('urequests.get') as urequests_call:
+            urequests_call.return_value = urequests_mock.mock_get
+            version_changed, remote_version = micropython_ota.check_version('http://example.org', 'sample')
         self.assertFalse(version_changed)
         self.assertEqual(remote_version, 'v1.0.1')
+        urequests_call.assert_called_with('http://example.org/sample/version', timeout=5)
+
+    def test_check_version_with_local_version_matching_remote_version_with_auth(self):
+        with patch('urequests.get') as urequests_call:
+            micropython_ota.check_version('http://example.org', 'sample', auth='aGVsbG86d29ybGQ=')
+        urequests_call.assert_called_with('http://example.org/sample/version', headers={'Authorization': 'Basic aGVsbG86d29ybGQ='}, timeout=5)
 
     @patch(
         'urequests.get', urequests_mock.mock_get
@@ -82,6 +88,22 @@ class TestMicropythonOTA(unittest.TestCase):
         with open('library.py', 'r') as source_file:
             self.assertEqual(source_file.readline(), 'print("This is a library")')
         machine_reset_call.assert_called_once()
+
+    @patch(
+        'micropython_ota.check_version', micropython_ota_mock.mock_check_version_true
+    )
+    def test_ota_update_on_version_changed_with_auth(self):
+        with patch('urequests.get') as urequests_call:
+            micropython_ota.ota_update('http://example.org', 'sample', ['main.py'], user='hello', passwd='world')
+        urequests_call.assert_called_with('http://example.org/sample/v1.0.1_main.py', headers={'Authorization': 'Basic aGVsbG86d29ybGQ='}, timeout=5)
+
+    @patch(
+        'micropython_ota.check_version', micropython_ota_mock.mock_check_version_true
+    )
+    def test_ota_update_on_version_changed_no_auth(self):
+        with patch('urequests.get') as urequests_call:
+            micropython_ota.ota_update('http://example.org', 'sample', ['main.py'])
+        urequests_call.assert_called_with('http://example.org/sample/v1.0.1_main.py', timeout=5)
 
     @patch(
         'micropython_ota.check_version', micropython_ota_mock.mock_check_version_true
@@ -162,3 +184,19 @@ class TestMicropythonOTA(unittest.TestCase):
         with patch('machine.reset') as machine_reset_call:
             micropython_ota.check_for_ota_update('http://example.org', 'sample')
             machine_reset_call.assert_not_called()
+
+    def test_generate_auth_user_and_passwd_provided(self):
+        auth = micropython_ota.generate_auth(user='hello', passwd='world')
+        self.assertEqual('aGVsbG86d29ybGQ=', auth)
+
+    def test_generate_auth_only_user_provided(self):
+        with self.assertRaises(ValueError):
+            micropython_ota.generate_auth(user='hello')
+
+    def test_generate_auth_only_passwd_provided(self):
+        with self.assertRaises(ValueError):
+            micropython_ota.generate_auth(passwd='world')
+
+    def test_generate_auth_no_user_and_passwd_provided(self):
+        auth = micropython_ota.generate_auth()
+        self.assertIsNone(auth)
