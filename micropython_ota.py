@@ -24,18 +24,19 @@ def check_version(host, project, timeout=5):
         return False, current_version
 
 
-def ota_update(host, project, filenames, reset_device=True, timeout=5):
+def ota_update(host, project, filenames, use_version_prefix=True, reset_device=True, timeout=5):
     all_files_found = True
+    prefix_or_path_separator = '_' if use_version_prefix else '/'
     try:
         version_changed, remote_version = check_version(host, project, timeout=timeout)
         if version_changed:
             for filename in filenames:
-                response = urequests.get(f'{host}/{project}/{remote_version}_{filename}', timeout=timeout)
+                response = urequests.get(f'{host}/{project}/{remote_version}{prefix_or_path_separator}{filename}', timeout=timeout)
                 response_status_code = response.status_code
                 response_text = response.text
                 response.close()
                 if response_status_code != 200:
-                    print(f'Remote source file {host}/{project}/{remote_version}_{filename} not found')
+                    print(f'Remote source file {host}/{project}/{remote_version}{prefix_or_path_separator}{filename} not found')
                     all_files_found = False
                     continue
                 with open(filename, 'w') as source_file:
