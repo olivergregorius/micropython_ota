@@ -78,8 +78,8 @@ class TestMicropythonOTA(unittest.TestCase):
     @patch(
         'urequests.get', urequests_mock.mock_get
     )
-    def test_ota_update_on_version_changed_with_device_reset(self):
-        with patch('machine.reset') as machine_reset_call:
+    def test_ota_update_on_version_changed_with_device_hard_reset(self):
+        with patch('machine.reset') as machine_reset_call, patch('machine.soft_reset') as machine_soft_reset_call:
             micropython_ota.ota_update('http://example.org', 'sample', ['main.py', 'library.py'])
         with open('version', 'r') as current_version_file:
             self.assertEqual(current_version_file.readline(), 'v1.0.1')
@@ -88,6 +88,25 @@ class TestMicropythonOTA(unittest.TestCase):
         with open('library.py', 'r') as source_file:
             self.assertEqual(source_file.readline(), 'print("This is a library")')
         machine_reset_call.assert_called_once()
+        machine_soft_reset_call.assert_not_called()
+
+    @patch(
+        'micropython_ota.check_version', micropython_ota_mock.mock_check_version_true
+    )
+    @patch(
+        'urequests.get', urequests_mock.mock_get
+    )
+    def test_ota_update_on_version_changed_with_device_soft_reset(self):
+        with patch('machine.reset') as machine_hard_reset_call, patch('machine.soft_reset') as machine_soft_reset_call:
+            micropython_ota.ota_update('http://example.org', 'sample', ['main.py', 'library.py'], hard_reset_device=False, soft_reset_device=True)
+        with open('version', 'r') as current_version_file:
+            self.assertEqual(current_version_file.readline(), 'v1.0.1')
+        with open('main.py', 'r') as source_file:
+            self.assertEqual(source_file.readline(), 'print("Hello World")')
+        with open('library.py', 'r') as source_file:
+            self.assertEqual(source_file.readline(), 'print("This is a library")')
+        machine_hard_reset_call.assert_not_called()
+        machine_soft_reset_call.assert_called_once()
 
     @patch(
         'micropython_ota.check_version', micropython_ota_mock.mock_check_version_true
@@ -127,9 +146,10 @@ class TestMicropythonOTA(unittest.TestCase):
         'urequests.get', urequests_mock.mock_get
     )
     def test_ota_update_on_version_changed_without_device_reset(self):
-        with patch('machine.reset') as machine_reset_call:
-            micropython_ota.ota_update('http://example.org', 'sample', ['main.py', 'library.py'], reset_device=False)
-        machine_reset_call.assert_not_called()
+        with patch('machine.reset') as machine_hard_reset_call, patch('machine.soft_reset') as machine_soft_reset_call:
+            micropython_ota.ota_update('http://example.org', 'sample', ['main.py', 'library.py'], hard_reset_device=False)
+        machine_hard_reset_call.assert_not_called()
+        machine_soft_reset_call.assert_not_called()
 
     @patch(
         'micropython_ota.check_version', micropython_ota_mock.mock_check_version_false
@@ -173,17 +193,28 @@ class TestMicropythonOTA(unittest.TestCase):
         'micropython_ota.check_version', micropython_ota_mock.mock_check_version_true
     )
     def test_check_for_ota_update_on_version_changed(self):
-        with patch('machine.reset') as machine_reset_call:
+        with patch('machine.reset') as machine_hard_reset_call, patch('machine.soft_reset') as machine_soft_reset_call:
             micropython_ota.check_for_ota_update('http://example.org', 'sample')
-            machine_reset_call.assert_called_once()
+            machine_hard_reset_call.assert_called_once()
+            machine_soft_reset_call.assert_not_called()
+
+    @patch(
+        'micropython_ota.check_version', micropython_ota_mock.mock_check_version_true
+    )
+    def test_check_for_ota_update_on_version_changed_with_device_soft_reset(self):
+        with patch('machine.reset') as machine_hard_reset_call, patch('machine.soft_reset') as machine_soft_reset_call:
+            micropython_ota.check_for_ota_update('http://example.org', 'sample', soft_reset_device=True)
+            machine_hard_reset_call.assert_not_called()
+            machine_soft_reset_call.assert_called_once()
 
     @patch(
         'micropython_ota.check_version', micropython_ota_mock.mock_check_version_false
     )
     def test_check_for_ota_update_on_version_not_changed(self):
-        with patch('machine.reset') as machine_reset_call:
+        with patch('machine.reset') as machine_reset_call, patch('machine.soft_reset') as machine_soft_reset_call:
             micropython_ota.check_for_ota_update('http://example.org', 'sample')
             machine_reset_call.assert_not_called()
+            machine_soft_reset_call.assert_not_called()
 
     def test_generate_auth_user_and_passwd_provided(self):
         auth = micropython_ota.generate_auth(user='hello', passwd='world')

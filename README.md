@@ -118,15 +118,16 @@ ota_host = 'http://192.168.2.100'
 project_name = 'sample'
 filenames = ['boot.py', 'main.py']
 
-micropython_ota.ota_update(ota_host, project_name, filenames, use_version_prefix=True, reset_device=True, timeout=5)
+micropython_ota.ota_update(ota_host, project_name, filenames, use_version_prefix=True, hard_reset_device=True, soft_reset_device=False, timeout=5)
 ```
 
 That's it. On boot the library retrieves the version-file from `http://192.168.2.100/sample/version` and evaluates its content against a locally persisted
 version-file. (Of course, on the first run the local version-file does not exist, yet. This is treated as a new version being available.)
 If the versions differ, the source code files listed in `filenames` are updated accordingly and on success the local version-file is updated as well. If the
 `use_version_prefix` is set to True (default) the library expects the 'Version as prefix' directory structure on the server, otherwise it expects the 'Version
-as subdirectory' directory structure (see [Preparation](#preparation)). If the `reset_device`-flag is set to `True` (default) the device will be reset after the
-successful update. The timeout can be set accordingly, by default its value is 5 seconds.
+as subdirectory' directory structure (see [Preparation](#preparation)). If the `hard_reset_device`-flag is set to `True` (default) the device will be reset
+after the successful update by calling `machine.reset()`. For just soft-resetting the device the flag `soft_reset_device` can be set to `True` (defaults to
+`False`), taking precedence. This will call the `machine.soft_reset()`-method. The timeout can be set accordingly, by default its value is 5 seconds.
 
 For regular checking for code updates the method `check_for_ota_update` might be called in the course of the regular application logic in main.py, e.g.:
 
@@ -140,11 +141,13 @@ project_name = 'sample'
 while True:
     # do some other stuff
     utime.sleep(10)
-    micropython_ota.check_for_ota_update(ota_host, project_name, timeout=5)
+    micropython_ota.check_for_ota_update(ota_host, project_name, soft_reset_device=False, timeout=5)
 ```
 
-In this case on each iteration the library checks for a new version as described above and resets the device if a new version is available. After the reset
-the `ota_update`-method called in the boot.py performs the actual update. This method accepts the timeout setting, too, by default it is set to 5 seconds.
+In this case on each iteration the library checks for a new version as described above and resets the device if a new version is available. By default a
+hard-reset is performed (by calling `machine.reset()`). By setting the flag `soft_reset_device` to `True` (defaults to `False`) the device will just be
+soft-reset (by calling `machine.soft_reset()`). After the reset the `ota_update`-method called in the boot.py performs the actual update. This method accepts
+the timeout setting, too, by default it is set to 5 seconds.
 
 ## HTTP(S) Basic Authentication
 

@@ -38,7 +38,7 @@ def generate_auth(user=None, passwd=None) -> str | None:
     return auth_bytes.decode().strip()
 
 
-def ota_update(host, project, filenames, use_version_prefix=True, user=None, passwd=None, reset_device=True, timeout=5) -> None:
+def ota_update(host, project, filenames, use_version_prefix=True, user=None, passwd=None, hard_reset_device=True, soft_reset_device=False, timeout=5) -> None:
     all_files_found = True
     auth = generate_auth(user, passwd)
     prefix_or_path_separator = '_' if use_version_prefix else '/'
@@ -62,15 +62,23 @@ def ota_update(host, project, filenames, use_version_prefix=True, user=None, pas
             if all_files_found:
                 with open('version', 'w') as current_version_file:
                     current_version_file.write(remote_version)
-                if reset_device:
+                if soft_reset_device:
+                    print('Soft-resetting device...')
+                    machine.soft_reset()
+                if hard_reset_device:
+                    print('Hard-resetting device...')
                     machine.reset()
     except Exception as ex:
         print(f'Something went wrong: {ex}')
 
 
-def check_for_ota_update(host, project, user=None, passwd=None, timeout=5):
+def check_for_ota_update(host, project, user=None, passwd=None, timeout=5, soft_reset_device=False):
     auth = generate_auth(user, passwd)
     version_changed, remote_version = check_version(host, project, auth=auth, timeout=timeout)
     if version_changed:
-        print(f'Found new version {remote_version}, rebooting device...')
-        machine.reset()
+        if soft_reset_device:
+            print(f'Found new version {remote_version}, soft-resetting device...')
+            machine.soft_reset()
+        else:
+            print(f'Found new version {remote_version}, hard-resetting device...')
+            machine.reset()
