@@ -159,13 +159,16 @@ Here is the same example as above, but using HTTPS and Basic Authentication:
 
 ```python
 import micropython_ota
+
 # connect to network
+
 ota_host = 'https://example.com'
 project_name = 'sample'
 filenames = ['boot.py', 'main.py']
 user = 'otauser'
 passwd = 'topsecret' # it's best to place this credential is a secrets.py file
-micropython_ota.ota_update(ota_host, project_name, filenames, user=user, passwd=passwd, reset_device=True)
+
+micropython_ota.ota_update(ota_host, project_name, filenames, user=user, passwd=passwd, use_version_prefix=True, hard_reset_device=True, soft_reset_device=False, timeout=5)
 ```
 
 There are plenty of tutorials online on how to set up secured HTTP file access on your webserver, but the basic steps are:
