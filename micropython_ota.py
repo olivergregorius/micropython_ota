@@ -5,12 +5,11 @@ import urequests
 
 
 def check_version(host, project, auth=None, timeout=5) -> (bool, str):
+    current_version = ''
     try:
         if 'version' in uos.listdir():
             with open('version', 'r') as current_version_file:
                 current_version = current_version_file.readline().strip()
-        else:
-            current_version = ''
 
         if auth:
             response = urequests.get(f'{host}/{project}/version', headers={'Authorization': f'Basic {auth}'}, timeout=timeout)
@@ -45,6 +44,10 @@ def ota_update(host, project, filenames, use_version_prefix=True, user=None, pas
     try:
         version_changed, remote_version = check_version(host, project, auth=auth, timeout=timeout)
         if version_changed:
+            try:
+                uos.mkdir('tmp')
+            except:
+                pass
             for filename in filenames:
                 if auth:
                     response = urequests.get(f'{host}/{project}/{remote_version}{prefix_or_path_separator}{filename}', headers={'Authorization': f'Basic {auth}'}, timeout=timeout)
@@ -57,9 +60,14 @@ def ota_update(host, project, filenames, use_version_prefix=True, user=None, pas
                     print(f'Remote source file {host}/{project}/{remote_version}{prefix_or_path_separator}{filename} not found')
                     all_files_found = False
                     continue
-                with open(filename, 'w') as source_file:
+                with open(f'tmp/{filename}', 'w') as source_file:
                     source_file.write(response_text)
             if all_files_found:
+                for filename in filenames:
+                    with open(f'tmp/{filename}', 'r') as source_file, open(filename, 'w') as target_file:
+                        target_file.write(source_file.read())
+                    uos.remove(f'tmp/{filename}')
+                uos.rmdir('tmp')
                 with open('version', 'w') as current_version_file:
                     current_version_file.write(remote_version)
                 if soft_reset_device:
