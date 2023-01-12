@@ -67,7 +67,10 @@ def ota_update(host, project, filenames, use_version_prefix=True, user=None, pas
                     with open(f'tmp/{filename}', 'r') as source_file, open(filename, 'w') as target_file:
                         target_file.write(source_file.read())
                     uos.remove(f'tmp/{filename}')
-                uos.rmdir('tmp')
+                try:
+                    uos.rmdir('tmp')
+                except:
+                    pass
                 with open('version', 'w') as current_version_file:
                     current_version_file.write(remote_version)
                 if soft_reset_device:
