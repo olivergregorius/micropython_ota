@@ -149,6 +149,34 @@ hard-reset is performed (by calling `machine.reset()`). By setting the flag `sof
 soft-reset (by calling `machine.soft_reset()`). After the reset the `ota_update`-method called in the boot.py performs the actual update. This method accepts
 the timeout setting, too, by default it is set to 5 seconds.
 
+## File manifest
+
+If you do not wish to hard code the firmware file names in your code, you may use a manifest file.  Include a file named `manifest` on your server alongside your other firmware files.
+
+    ```
+    server-root/
+    |- <project_name>/
+    |  |- version
+    |  |- <version_subdir>
+    |     |- manifest
+    |     |- <filename1>
+    |     |- <filename2>
+    |     |- ...
+    ```
+
+The contents of the manifest file are identical to the file names you would supply the call to `ota_update()` with one file listed per line.
+
+    ```
+    file1.py
+    file2.py
+    dir1/
+    dir1/file3.py
+    ...
+    ```
+
+Note that using a manifest supports adding subdirectories.  In order to use/create a subdirectory, the directory name MUST end with a forward-slash and be listed above any files that are to reside within that directory.
+
+
 ## HTTP(S) Basic Authentication
 
 `ota_update()` and `check_for_ota_update()` methods allow optional `user` and `passwd` parameters.  When specified the library performs a basic authentication
